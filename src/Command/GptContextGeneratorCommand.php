@@ -235,7 +235,7 @@ class GptContextGeneratorCommand extends Command
         ];
 
         $this->warn('Searching for files in the project');
-        $allFiles = File::allFiles(\App\Console\Commands\base_path());
+        $allFiles = File::allFiles(base_path());
 
         $filteredFiles = [];
 
