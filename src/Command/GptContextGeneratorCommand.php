@@ -19,9 +19,16 @@ class GptContextGeneratorCommand extends Command
     protected string $historyStoragePath = '';
     protected string $promptOutputFile = '';
 
-    public function handle()
+    public function handle(): void
     {
-        $this->initCommandDirectory();
+        $dir = storage_path('app/gpt-context-generator');
+
+        if (! File::exists($dir)) {
+            File::makeDirectory($dir, 0755, true);
+        }
+
+        $this->historyStoragePath = $dir.'/history.json';
+        $this->promptOutputFile = $dir.'/prompt-'.date('Y-m-d_H-i-s') . '.txt';
 
         // Load existing setups from suggests file
         $existingSetups = $this->loadSetups();
@@ -154,17 +161,21 @@ class GptContextGeneratorCommand extends Command
         // Save the new or updated setup
         $this->saveSetup($setupName, $selectedTables, $selectedFiles, $existingSetups);
 
-        $this->info($this->historyStoragePath.' has been generated successfully');
+        $this->warn(basename($this->promptOutputFile));
+
+        echo 'file://'.$this->promptOutputFile.":1\n";
+
+        $this->info('Prompt has been generated successfully');
     }
 
-    protected function getAllTables()
+    protected function getAllTables(): array
     {
         $tables = DB::select('SHOW TABLES');
 
         return array_map(fn($table) => array_values((array)$table)[0], $tables);
     }
 
-    protected function removeComments($sql)
+    protected function removeComments($sql): string
     {
         // Remove /* ... */ comments
         $sql = preg_replace('/\/\*.*?\*\//s', '', $sql);
@@ -289,7 +300,7 @@ class GptContextGeneratorCommand extends Command
         return $data ?: [];
     }
 
-    protected function saveSetup(string $name, array $tables, array $files, array $existingSetups)
+    protected function saveSetup(string $name, array $tables, array $files, array $existingSetups): void
     {
         // Check if a setup with the same name exists, remove it if yes
         $existingSetups = array_filter($existingSetups, fn($s) => $s['name'] !== $name);
@@ -312,12 +323,12 @@ class GptContextGeneratorCommand extends Command
 
         $name = trim($tablesPart . '_' . $filesPart, '_');
         if (empty($name)) {
-            $name = 'setup_' . date('Ymd_His');
+            $name = 'setup ' . date('Y-m-d H:i:s');
         }
         return $name;
     }
 
-    protected function printFilesAsTree(array $files)
+    protected function printFilesAsTree(array $files): void
     {
         // Sort files to get a nicer tree structure
         sort($files);
@@ -339,7 +350,7 @@ class GptContextGeneratorCommand extends Command
         $this->printTree($tree);
     }
 
-    protected function printTree(array $tree, $prefix = '')
+    protected function printTree(array $tree, $prefix = ''): void
     {
         $entries = array_keys($tree);
         $count = count($entries);
