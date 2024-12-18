@@ -21,8 +21,7 @@ class GptContextGeneratorCommand extends Command
 
     public function handle()
     {
-        $this->historyStoragePath = storage_path('app/gpt-context-generator/history.json');
-        $this->promptOutputFile = storage_path('app/gpt-context-generator/prompt-'.date('Y-m-d_H-i-s') . '.txt');
+        $this->initCommandDirectory();
 
         // Load existing setups from suggests file
         $existingSetups = $this->loadSetups();
@@ -354,5 +353,17 @@ class GptContextGeneratorCommand extends Command
                 $this->printTree($tree[$entry], $newPrefix);
             }
         }
+    }
+
+    private function initCommandDirectory(): void
+    {
+        $dir = storage_path('app/gpt-context-generator');
+
+        if (!File::exists($dir)) {
+            File::makeDirectory($dir, 0755, true);
+        }
+
+        $this->historyStoragePath = $dir . '/history.json';
+        $this->promptOutputFile = $dir . '/prompt-' . date('Y-m-d_H-i-s') . '.txt';
     }
 }
