@@ -1,0 +1,16 @@
+{
+  "name": "iamserjo/php-gpt-context-generator",
+  "description": "Helps to create prompt context of your project according to chosen tables and files",
+  "type": "command",
+  "require": {
+    "php": "^8.1",
+    "laravel/prompts": "^0.3.2",
+    "laravel/framework": "^9.5"
+  },
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Iamserjo\\PhpGptContextGenerator\\": "src/"
+    }
+  }
+}
