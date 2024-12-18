@@ -147,10 +147,11 @@ class GptContextGeneratorCommand extends Command
             $content = "File $absolutePath\n" . $content;
             file_put_contents($this->promptOutputFile, "\n" . $content, FILE_APPEND);
             $filesize = filesize($absolutePath);
-            if ($filesize > 13000) {
+            if ($filesize > env('GPT_CONTEXT_GENERATOR_MAX_FILE_SIZE', 13000)) {
                 continue;
             }
-            $this->info("Appended file: {$filesize} $relativePath");
+            $humanFileSize = number_format($filesize / 1024, 2) . ' KB';
+            $this->info("Appended file: {$humanFileSize} $relativePath");
         }
 
         file_put_contents($this->promptOutputFile, "\n" . $this->getDefaultPrompt(), FILE_APPEND);
