@@ -2,7 +2,7 @@
 
 namespace Iamserjo\PhpGptContextGenerator;
 
-use Iamserjo\PhpGptContextGenerator\Console\GptContextGeneratorCommand;
+use Iamserjo\PhpGptContextGenerator\Command\GptContextGeneratorCommand;
 use Illuminate\Support\ServiceProvider;
 
 class GptContextGeneratorServiceProvider extends ServiceProvider

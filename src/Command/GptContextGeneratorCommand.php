@@ -1,6 +1,6 @@
 <?php
 
-namespace Iamserjo\PhpGptContextGenerator\Console;
+namespace Iamserjo\PhpGptContextGenerator\Command;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
