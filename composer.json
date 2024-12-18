@@ -12,5 +12,12 @@
     "psr-4": {
       "Iamserjo\\PhpGptContextGenerator\\": "src/"
     }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Iamserjo\\PhpGptContextGenerator\\GptContextGeneratorServiceProvider"
+      ]
+    }
   }
 }
