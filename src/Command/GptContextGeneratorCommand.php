@@ -12,14 +12,18 @@ use function Laravel\Prompts\select;
 
 class GptContextGeneratorCommand extends Command
 {
-    protected $signature = 'xdev:gpt-project-context-generator';
+    protected $signature = '_dev:gpt-project-context-generator';
 
     protected $description = 'Helps to create prompt context of your project according to chosen tables and files';
 
-    protected string $suggestsFile = '.suggests.txt';
+    protected string $historyStoragePath = '';
+    protected string $promptOutputFile = '';
 
     public function handle()
     {
+        $this->historyStoragePath = storage_path('app/gpt-context-generator/history.json');
+        $this->promptOutputFile = storage_path('app/gpt-context-generator/prompt-'.date('Y-m-d_H-i-s') . '.txt');
+
         // Load existing setups from suggests file
         $existingSetups = $this->loadSetups();
 
@@ -122,9 +126,8 @@ class GptContextGeneratorCommand extends Command
             }
         } while ($fileInput);
 
-        // Append selected files content to gpt_setup.txt
-        $outputFile = 'gpt_setup.txt';
-        file_put_contents($outputFile, $schemaDump);
+        // Append selected files content prompt output
+        file_put_contents($this->promptOutputFile, $schemaDump);
 
         foreach ($selectedFiles as $relativePath) {
             $absolutePath = ($relativePath);
@@ -136,7 +139,7 @@ class GptContextGeneratorCommand extends Command
 
             $content = file_get_contents($absolutePath);
             $content = "File $absolutePath\n" . $content;
-            file_put_contents($outputFile, "\n" . $content, FILE_APPEND);
+            file_put_contents($this->promptOutputFile, "\n" . $content, FILE_APPEND);
             $filesize = filesize($absolutePath);
             if ($filesize > 13000) {
                 continue;
@@ -144,7 +147,7 @@ class GptContextGeneratorCommand extends Command
             $this->info("Appended file: {$filesize} $relativePath");
         }
 
-        file_put_contents($outputFile, "\n" . $this->getDefaultPrompt(), FILE_APPEND);
+        file_put_contents($this->promptOutputFile, "\n" . $this->getDefaultPrompt(), FILE_APPEND);
 
         // Generate a name for the setup based on selected tables and files
         $setupName = $this->generateSetupName($selectedTables, $selectedFiles);
@@ -152,8 +155,7 @@ class GptContextGeneratorCommand extends Command
         // Save the new or updated setup
         $this->saveSetup($setupName, $selectedTables, $selectedFiles, $existingSetups);
 
-        $this->info("Setup '{$setupName}' saved successfully in {$this->suggestsFile}.");
-        $this->info('gpt_setup.txt has been generated successfully.');
+        $this->info($this->historyStoragePath.' has been generated successfully');
     }
 
     protected function getAllTables()
@@ -279,11 +281,11 @@ class GptContextGeneratorCommand extends Command
 
     protected function loadSetups(): array
     {
-        if (!file_exists($this->suggestsFile)) {
+        if (!file_exists($this->historyStoragePath)) {
             return [];
         }
 
-        $json = file_get_contents($this->suggestsFile);
+        $json = file_get_contents($this->historyStoragePath);
         $data = json_decode($json, true);
         return $data ?: [];
     }
@@ -299,7 +301,7 @@ class GptContextGeneratorCommand extends Command
             'files' => $files
         ];
 
-        file_put_contents($this->suggestsFile, json_encode(array_values($existingSetups), JSON_PRETTY_PRINT));
+        file_put_contents($this->historyStoragePath, json_encode(array_values($existingSetups), JSON_PRETTY_PRINT));
     }
 
     protected function generateSetupName(array $tables, array $files): string
